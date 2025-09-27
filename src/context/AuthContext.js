@@ -4,13 +4,19 @@ import {
   loginUserService,
   registerUserService,
 } from "@/api/auth";
-import { createContext, useContext, useEffect, useReducer, useState } from "react";
+import { apiFetch } from "@/utils/utils";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 
 const AuthContext = createContext();
 
 const initialState = {
   user: null,
-  token: null,
   isAuthenticated: false,
 };
 
@@ -20,28 +26,16 @@ function authReducer(state, action) {
       return {
         ...state,
         user: action.payload.user,
-        token: action.payload.token,
         isAuthenticated: true,
       };
     case "LOGOUT":
-      localStorage.removeItem("token");
       return {
         ...state,
         user: null,
-        token: null,
         isAuthenticated: false,
       };
     default:
       return state;
-  }
-}
-
-function isTokenExpired(token) {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.exp * 1000 < Date.now();
-  } catch (e) {
-    return { error: e.message || "Invalid token." };
   }
 }
 
@@ -52,23 +46,18 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     async function loadUser() {
-      const token = localStorage.getItem("token");
-      if (token && !isTokenExpired(token)) {
-        const res = await getCurrentUserService();
-        if (!res.error) {
-          dispatch({
-            type: "LOGIN_SUCCESS",
-            payload: { user: res, token },
-          });
-        } else {
-          dispatch({ type: "LOGOUT" });
-        }
+      const res = await getCurrentUserService();
+      if (!res.error) {
+        dispatch({
+          type: "LOGIN_SUCCESS",
+          payload: { user: res },
+        });
       } else {
         dispatch({ type: "LOGOUT" });
       }
+      setIsLoading(false);
     }
     loadUser();
-    setIsLoading(false);
   }, []);
 
   const login = async (credentials) => {
@@ -84,11 +73,15 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (formData) => {
-    const data = await registerUserService(formData);
-    return data;
+    return await registerUserService(formData);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await apiFetch("/auth/logout", { method: "POST" });
+    } catch (error) {
+      return { error: error.message || "logout failed." };
+    }
     dispatch({ type: "LOGOUT" });
   };
 

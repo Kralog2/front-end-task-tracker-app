@@ -2,10 +2,11 @@ import { apiFetch } from "@/utils/utils";
 
 export async function registerUserService(data) {
   try {
-    return await apiFetch("/auth/register", {
+    const result = await apiFetch("/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
     });
+    return result
   } catch (error) {
     return { error: error.message || "Registration failed." };
   }
@@ -17,9 +18,6 @@ export async function loginUserService(credentials) {
       method: "POST",
       body: JSON.stringify(credentials),
     });
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-    }
     return data;
   } catch (error) {
     return { error: error.message || "Login failed." };

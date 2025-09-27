@@ -1,6 +1,23 @@
 import "./TaskCard.css";
 
-export default function TaskCard({ task, onClick, onDragStart }) {
+export default function TaskCard({ task = {}, onClick, onDragStart }) {
+  const {
+    title = "",
+    description = "",
+    createdAt,
+    dueDate,
+  } = task;
+  
+  const formatDate = (dateStr) => {
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "N/A";
+      return d.toLocaleDateString();
+    } catch {
+      return "N/A";
+    }
+  };
+
   return (
     <div
       draggable
@@ -8,15 +25,15 @@ export default function TaskCard({ task, onClick, onDragStart }) {
       onClick={onClick}
       className="taskCardContainer"
     >
-      <h4 className="taskTitle">{task.title}</h4>
+      <h4 className="taskTitle">{title}</h4>
       <p>
-        <strong>Description:</strong> {task.description}
+        <strong>Description:</strong> {description}
       </p>
       <p>
-        <strong>Created:</strong> {new Date(task.createdAt).toLocaleDateString()}
+        <strong>Created:</strong> {formatDate(createdAt)}
       </p>
       <p>
-        <strong>Due:</strong> {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A"}
+        <strong>Due:</strong> {dueDate ? formatDate(dueDate) : "N/A"}
       </p>
     </div>
   );

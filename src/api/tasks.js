@@ -1,11 +1,17 @@
 import { apiFetch } from "@/utils/utils";
 
+function safeId(id) {
+  if (typeof id !== "string") throw new Error("Invalid task id");
+  return id;
+}
+
 export async function createTaskService(data) {
   try {
-    return await apiFetch("/tasks", {
+   const result = await apiFetch("/tasks", {
       method: "POST",
       body: JSON.stringify(data),
     });
+    return result;
   } catch (error) {
     return { error: error.message || "Failed to create task." };
   }
@@ -21,10 +27,12 @@ export async function getTasks() {
 
 export async function updateTaskService(id, data) {
   try {
-    return await apiFetch(`/tasks/${id}`, {
+    const safe = safeId(id);
+    const result = await apiFetch(`/tasks/${safe}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
+    return result;
   } catch (error) {
     return { error: error.message || "Failed to update task." };
   }
@@ -32,9 +40,11 @@ export async function updateTaskService(id, data) {
 
 export async function deleteTaskService(id) {
   try {
-    return await apiFetch(`/tasks/${id}`, {
+    const safe = safeId(id);
+    const result =  await apiFetch(`/tasks/${safe}`, {
       method: "DELETE",
     });
+    return result;
   } catch (error) {
     return { error: error.message || "Failed to delete task." };
   }
